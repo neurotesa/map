@@ -19,7 +19,7 @@ h1{font-weight:600;font-size:clamp(20px,3vw,28px);margin:0}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
 .month{background:var(--paper);padding:14px 14px 18px;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .mhead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin:0 4px 10px}
-.mname{font-size:20px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--accent)}
+.mnav{display:flex;align-items:center;gap:10px}.arr{font:inherit;font-size:22px;line-height:1;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--accent);cursor:pointer}.arr:disabled{opacity:.3;cursor:default}.mname{min-width:11ch;text-align:center;font-size:20px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--accent)}
 .mtools{display:flex;gap:8px;flex-wrap:wrap}
 .mtools button,.mtools label{font:inherit;font-size:13px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer}
 .mtools input{display:none}
@@ -58,7 +58,7 @@ dialog textarea{width:100%;min-height:150px;font:inherit;font-size:15px;padding:
 </head><body>
 <style>.tabs{display:flex;gap:4px;max-width:1240px;margin:0 auto 14px;padding:4px;border-radius:10px;background:rgba(127,127,140,.14);width:fit-content;font-family:"IBM Plex Sans","Segoe UI",system-ui,sans-serif}.tabs a{padding:7px 14px;border-radius:7px;font-size:14px;font-weight:500;color:inherit;opacity:.7;text-decoration:none}.tabs a:hover{opacity:1}.tabs a[aria-current]{opacity:1;background:rgba(127,127,140,.28)}</style><nav class="tabs"><a href="index.html" aria-current="page">Календарь</a><a href="globe.html">Глобус</a><a href="path.html">Мой путь</a></nav>
 <div class="wrap">
-<header><h1>Календарь по карте</h1><p class="sub">натальная карта 6.04.1992, 6:00, Тараз · время Алматы</p></header>
+<header><h1>Календарь по карте</h1><p class="sub">натальная карта 6.04.1992, 6:00, Тараз · время Алматы · листайте месяцы стрелками или свайпом</p></header>
 <div class="legend"><span><i style="background:var(--good)"></i>лёгкий день</span><span><i style="background:var(--line)"></i>обычный</span><span><i style="background:var(--bad)"></i>напряжённый</span><span>✓ делать · ✕ не делать</span></div>
 <div id="cal"></div>
 <p class="foot">Записи «Реальность» хранятся в этом браузере и не зависят от файлов прогноза: при добавлении новых месяцев и обновлении сайта они остаются. Чтобы не потерять их при очистке браузера или перенести на другое устройство, раз в месяц скачивайте Excel — его же можно загрузить обратно. <button id="all">Скачать копию всех записей</button> · <label style="color:var(--accent);text-decoration:underline;cursor:pointer">загрузить копию<input type="file" id="allimp" accept=".json" hidden></label></p>
@@ -70,12 +70,25 @@ dialog textarea{width:100%;min-height:150px;font:inherit;font-size:15px;padding:
 <!-- Новый месяц: положите файл в папку months и добавьте строку ниже -->
 <script src="months/2026-10.js"></script>
 <script src="months/2026-11.js"></script>
+<script src="months/2026-12.js"></script>
+<script src="months/2027-01.js"></script>
+<script src="months/2027-02.js"></script>
+<script src="months/2027-03.js"></script>
+<script src="months/2027-04.js"></script>
+<script src="months/2027-05.js"></script>
+<script src="months/2027-06.js"></script>
+<script src="months/2027-07.js"></script>
+<script src="months/2027-08.js"></script>
+<script src="months/2027-09.js"></script>
+<script src="months/2027-10.js"></script>
+<script src="months/2027-11.js"></script>
+<script src="months/2027-12.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 const KEY="natal-cal-notes-v1";
 let NOTES={};try{NOTES=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){}
 function persist(){try{localStorage.setItem(KEY,JSON.stringify(NOTES));return true}catch(e){alert("Браузер не дал сохранить. Скачайте копию записей.");return false}}
-const WD=["Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"],MG=["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+const WD=["Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"],WDM=["Понедельник","Вторник","Среда","Четверг","Пятница","Суббота","Воскресенье"],MG=["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const today=new Date(Date.now()+5*3600e3).toISOString().slice(0,10);
 const BY={};MONTHS.forEach(m=>m.days.forEach(x=>BY[x.d]=x));
@@ -90,15 +103,23 @@ function cell(k,d,x){
    (note?`<span class="prev">${esc(note)}</span>`:"")+
    `<button class="real${note?" has":""}" data-d="${k}">${note?"Реальность ✓":"Реальность"}</button></div>`;
 }
-function month(m){
-  const [y,mo]=m.id.split("-").map(Number),first=new Date(Date.UTC(y,mo-1,1)).getUTCDay(),n=new Date(Date.UTC(y,mo,0)).getUTCDate();
-  let h=`<section class="month"><div class="mhead"><div class="mname">${esc(m.title)}</div><div class="mtools"><button data-x="${m.id}">Скачать Excel</button><label>Загрузить Excel<input type="file" accept=".xlsx" data-imp="${m.id}"></label></div></div><div class="wds">${WD.map(w=>`<div>${w}</div>`).join("")}</div><div class="grid">`;
+function month(m,idx){
+  const [y,mo]=m.id.split("-").map(Number),first=(new Date(Date.UTC(y,mo-1,1)).getUTCDay()+6)%7,n=new Date(Date.UTC(y,mo,0)).getUTCDate();
+  let h=`<section class="month"><div class="mhead"><div class="mnav"><button class="arr" data-go="-1" aria-label="Предыдущий месяц"${idx===0?" disabled":""}>‹</button><div class="mname">${esc(m.title)}</div><button class="arr" data-go="1" aria-label="Следующий месяц"${idx===MONTHS.length-1?" disabled":""}>›</button></div><div class="mtools"><button data-x="${m.id}">Скачать Excel</button><label>Загрузить Excel<input type="file" accept=".xlsx" data-imp="${m.id}"></label></div></div><div class="wds">${WDM.map(w=>`<div>${w}</div>`).join("")}</div><div class="grid">`;
   for(let i=0;i<first;i++)h+=`<div class="c pad"></div>`;
   for(let d=1;d<=n;d++){const k=`${m.id}-${String(d).padStart(2,"0")}`;h+=cell(k,d,BY[k]);}
   const t=(7-(first+n)%7)%7;for(let i=0;i<t;i++)h+=`<div class="c pad"></div>`;
   return h+"</div></section>";
 }
-function draw(){document.getElementById("cal").innerHTML=MONTHS.map(month).join("");}
+MONTHS.sort((a,b)=>a.id<b.id?-1:1);
+let IDX=Math.max(0,MONTHS.findIndex(m=>m.id===today.slice(0,7)));
+if(MONTHS.findIndex(m=>m.id===today.slice(0,7))<0&&MONTHS.length&&today>MONTHS[MONTHS.length-1].id)IDX=MONTHS.length-1;
+function draw(){document.getElementById("cal").innerHTML=MONTHS.length?month(MONTHS[IDX],IDX):"";}
+function go(dir){const n=IDX+dir;if(n<0||n>=MONTHS.length)return;IDX=n;draw();window.scrollTo({top:0,behavior:"smooth"});}
+document.addEventListener("keydown",e=>{if(document.querySelector("dialog[open]"))return;if(e.key==="ArrowLeft")go(-1);if(e.key==="ArrowRight")go(1);});
+let tx=null,ty=null;const calEl=document.getElementById("cal");
+calEl.addEventListener("touchstart",e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+calEl.addEventListener("touchend",e=>{if(tx===null)return;const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.5)go(dx<0?1:-1);tx=null},{passive:true});
 draw();
 const dlg=document.getElementById("dlg"),ta=document.getElementById("ta");let cur=null;
 document.getElementById("cal").addEventListener("click",e=>{
@@ -106,7 +127,7 @@ document.getElementById("cal").addEventListener("click",e=>{
     document.getElementById("dh").innerHTML=`<h3>${dt.getUTCDate()} ${MG[dt.getUTCMonth()]}, ${WD[dt.getUTCDay()].toLowerCase()}</h3>`+(x.full?`<p><b>${esc(x.full)}</b></p>`:"")+
     `<p>${esc(x.expect.join("; "))}</p><p class="tr">${esc(x.transits.join(" · "))}<br>${esc(x.moon)}</p>`;
     ta.value=NOTES[cur]||"";dlg.showModal();setTimeout(()=>ta.focus(),30);return;}
-  const xb=e.target.closest("[data-x]");if(xb)exportMonth(xb.dataset.x);
+  const xb=e.target.closest("[data-x]");if(xb)exportMonth(xb.dataset.x);const ar=e.target.closest("[data-go]");if(ar)go(+ar.dataset.go);
 });
 document.getElementById("cal").addEventListener("change",async e=>{const id=e.target.dataset.imp;if(!id)return;const f=e.target.files[0];if(!f)return;
   try{const wb=XLSX.read(await f.arrayBuffer());const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1});let c=0;
