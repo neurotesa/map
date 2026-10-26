@@ -34,7 +34,7 @@ h1{font-weight:600;font-size:clamp(20px,3vw,28px);margin:0}
 .good .dot{background:var(--good)}.bad .dot{background:var(--bad)}.mid .dot{background:var(--line)}
 .sp{font-weight:600;font-size:10.5px;color:#fff;background:var(--accent);border-radius:3px;padding:1px 4px;align-self:flex-start}
 .sp.bad{background:var(--bad)}.sp.good{background:var(--good)}.sp.dv{background:var(--gold)}
-.y{color:var(--good)}.n{color:var(--bad)}
+.ev{font-weight:600;font-size:11.5px}.y{color:var(--good)}.n{color:var(--bad)}
 .real{margin-top:auto;font:inherit;font-size:12.5px;font-weight:600;border:1.5px solid var(--accent);color:var(--accent);background:transparent;border-radius:6px;padding:6px 4px;cursor:pointer;width:100%}
 .real.has{background:var(--accent);color:#fff}
 .real:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
@@ -97,7 +97,7 @@ function cell(k,d,x){
   if(!x)return `<div class="c off"><span class="b">${d}</span></div>`;
   const note=NOTES[k];
   return `<div class="c ${x.tone}${k===today?" today":""}"><span class="b">${d}<span class="wdm">${wd}</span></span><span class="dot"></span>`+
-   (x.label?`<span class="sp ${x.labelKind||""}">${esc(x.label)}</span>`:"")+
+   (x.label?`<span class="sp ${x.labelKind||""}">${esc(x.label)}</span>`:"")+(x.full?`<span class="ev">${esc(x.full.split("; ").map(t=>t.split(" — ")[1]||"").filter(Boolean).join("; "))}</span>`:"")+
    `<span>${esc(x.expect.slice(0,2).join("; "))}</span><span class="y">✓ ${esc(x.do.join(", "))}</span>`+
    (x.dont.length?`<span class="n">✕ ${esc(x.dont.join(", "))}</span>`:"")+
    (note?`<span class="prev">${esc(note)}</span>`:"")+
