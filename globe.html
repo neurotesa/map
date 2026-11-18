@@ -102,7 +102,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
         <p class="sec-label">Перейти к городу</p>
         <div class="cities" id="cities"></div>
       </div>
-      <p class="note">Сплошная линия — планета восходит (Асц) или в зените (MC). Пунктир — заходит (Дсц) или под ногами (IC). Белые точки — крупные города в пределах ~60 км от линии, подписано, какая линия. Точность около 100 км: одна минута во времени рождения сдвигает линии примерно на 20–25 км.</p>
+      <p class="note">Сплошная линия — планета восходит (Асц) или в зените (MC). Пунктир — заходит (Дсц) или под ногами (IC). Белые точки — крупные города на линиях Юпитера, Венеры и Меркурия (до ~60 км) и в зоне линий Солнца (до ~400 км). Точность около 100 км: одна минута во времени рождения сдвигает линии примерно на 20–25 км.</p>
     </div>
   </div>
 </div>
@@ -133,14 +133,16 @@ const MEAN = {
 const CITIES = [
   ["Тараз",42.90,71.37],["Алматы",43.24,76.95],["Томск",56.50,84.97],["Москва",55.76,37.62],["Санкт-Петербург",59.94,30.31]
 ];
-// крупные города в пределах ~60 км от линий (00:30)
+// города на зелёных линиях (Юпитер, Венера, Меркурий, до ~60 км) и в зоне линий Солнца (до ~400 км), время 00:30
 const LINE_CITIES = [
-  ["Берлин",52.52,13.41,"Нептун IC"],["Рим",41.89,12.51,"Уран IC"],["Стокгольм",59.33,18.07,"Солнце Дсц"],
-  ["Касабланка",33.59,-7.61,"Меркурий Дсц"],["Тегеран",35.69,51.42,"Луна Дсц"],["Баку",40.38,49.89,"Плутон Асц"],
-  ["Екатеринбург",56.86,60.62,"Юпитер MC"],["Новосибирск",55.02,82.93,"Меркурий IC"],["Харбин",45.75,126.65,"Луна IC"],
-  ["Циндао",36.06,120.38,"Уран Асц"],["Гуанчжоу",23.12,113.25,"Нептун Асц"],["Сингапур",1.29,103.85,"Нептун Асц"],
-  ["Нагоя",35.18,136.91,"Плутон MC"],["Лос-Анджелес",34.05,-118.24,"Марс MC"],["Сан-Антонио",29.42,-98.49,"Венера MC"],
-  ["Гавана",23.13,-82.38,"Солнце MC"],["Рио-де-Жанейро",-22.91,-43.18,"Плутон IC"]
+  ["Екатеринбург",56.86,60.62],["Лос-Анджелес",34.05,-118.24],
+  ["Новосибирск",55.02,82.93],["Сан-Антонио",29.42,-98.49],["Пуэбла",19.05,-98.21],["Аллахабад",25.44,81.84],["Бамако",12.61,-7.98],
+  ["Касабланка",33.59,-7.61],["Форт-Уэрт",32.73,-97.32],
+  ["Грац",47.07,15.44],["Вена",48.21,16.37],["Прага",50.08,14.44],["Загреб",45.81,15.98],["Берлин",52.52,13.41],["Мюнхен",48.14,11.58],
+  ["Рим",41.89,12.51],["Будапешт",47.50,19.04],["Варшава",52.23,21.01],["Копенгаген",55.68,12.57],["Стокгольм",59.33,18.07],["Рига",56.95,24.11],
+  ["Триполи",32.89,13.19],["Абуджа",9.06,7.50],["Кано",12.00,8.52],
+  ["Торонто",43.71,-79.40],["Колумбус",39.96,-83.00],["Шарлотт",35.23,-80.84],["Джэксонвилл",30.33,-81.66],["Гавана",23.13,-82.38],["Кито",-0.23,-78.52],
+  ["Красноярск",56.04,92.93],["Мандалай",21.97,96.08],["Янгон",16.81,96.16],["Бангкок",13.75,100.50],["Медан",3.58,98.67],["Куала-Лумпур",3.14,101.69]
 ];
 
 const state = {on:new Set(LINES.map(p=>p.key)), angles:new Set(["ASC","DSC","MC","IC"]), sel:"jupiter", zoom:1};
@@ -190,21 +192,21 @@ function draw(){
 
   const c = proj.invert([W/2,W/2]);
   const boxes=[];
-  ctx.font = "500 12px 'IBM Plex Sans', system-ui, sans-serif";
+  ctx.font = "500 10.5px 'IBM Plex Sans', system-ui, sans-serif";
   for(const [name,lat,lon] of CITIES){ if(d3.geoDistance([lon,lat],c) > Math.PI/2 - 0.05) continue; const [x,y]=proj([lon,lat]); const tw=ctx.measureText(name).width; boxes.push(name==="Тараз"?[x,y+5,x+tw+16,y+22]:[x-4,y-9,x+tw+16,y+8]); }
   const hit=b=>boxes.some(a=>b[0]<a[2]&&b[2]>a[0]&&b[1]<a[3]&&b[3]>a[1]);
-  ctx.font = "400 11px 'IBM Plex Sans', system-ui, sans-serif";
-  for(const [name,lat,lon,ln] of LINE_CITIES){
+  ctx.font = "400 9.5px 'IBM Plex Sans', system-ui, sans-serif";
+  for(const [name,lat,lon] of LINE_CITIES){
     if(d3.geoDistance([lon,lat],c) > Math.PI/2 - 0.05) continue;
     const [x,y] = proj([lon,lat]);
     ctx.beginPath(); ctx.arc(x,y,2.6,0,2*Math.PI); ctx.fillStyle="#e8ebf4"; ctx.fill();
     ctx.lineWidth=1.2; ctx.strokeStyle="#0b0f1a"; ctx.stroke();
-    const t=name+" · "+ln, tw=ctx.measureText(t).width, bx=[x+5,y-8,x+tw+11,y+7];
+    const t=name, tw=ctx.measureText(t).width, bx=[x+4,y-7,x+tw+10,y+6];
     if(hit(bx)) continue; boxes.push(bx);
-    ctx.fillStyle="rgba(11,15,26,.6)"; ctx.fillRect(x+5,y-8,tw+6,15);
-    ctx.fillStyle="#b9c2dc"; ctx.fillText(t,x+8,y+3);
+    ctx.fillStyle="rgba(11,15,26,.6)"; ctx.fillRect(x+4,y-7,tw+6,13);
+    ctx.fillStyle="#b9c2dc"; ctx.fillText(t,x+7,y+3);
   }
-  ctx.font = "500 12px 'IBM Plex Sans', system-ui, sans-serif";
+  ctx.font = "500 10.5px 'IBM Plex Sans', system-ui, sans-serif";
   for(const [name,lat,lon] of CITIES){
     if(d3.geoDistance([lon,lat],c) > Math.PI/2 - 0.05) continue;
     const [x,y] = proj([lon,lat]);
@@ -212,8 +214,8 @@ function draw(){
     ctx.lineWidth=1.5; ctx.strokeStyle="#0b0f1a"; ctx.stroke();
     if(name==="Тараз"){ctx.fillStyle="rgba(11,15,26,.72)";const tw0=ctx.measureText(name).width;ctx.fillRect(x+6,y+5,tw0+8,17);ctx.fillStyle="#e8ebf4";ctx.fillText(name,x+10,y+18);continue;}
     const tw = ctx.measureText(name).width;
-    ctx.fillStyle="rgba(11,15,26,.72)"; ctx.fillRect(x+6,y-9,tw+8,17);
-    ctx.fillStyle="#e8ebf4"; ctx.fillText(name,x+10,y+4);
+    ctx.fillStyle="rgba(11,15,26,.72)"; ctx.fillRect(x+6,y-8,tw+8,15);
+    ctx.fillStyle="#e8ebf4"; ctx.fillText(name,x+10,y+3);
   }
   ctx.beginPath(); path({type:"Sphere"}); ctx.strokeStyle="rgba(150,170,220,.35)"; ctx.lineWidth=1; ctx.stroke();
 }
