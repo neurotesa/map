@@ -59,6 +59,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .rows .k{font-family:var(--mono);font-size:12px;color:var(--muted);padding-top:2px;white-space:nowrap}
 .cities{display:flex;flex-wrap:wrap;gap:6px}
 .note{font-size:13px;color:var(--muted);max-width:62ch;margin:0}
+.lts{display:flex;flex-direction:column;gap:6px}.lt{display:grid;grid-template-columns:22px 34px minmax(0,1fr);align-items:center;gap:10px;text-align:left;width:100%;font-size:14px;padding:7px 10px}.lt .k{font-family:var(--mono);font-size:12px;color:var(--muted)}.lt[aria-pressed="false"]{opacity:.4}.lt[aria-pressed="false"] span:last-child{text-decoration:line-through}.lt-hint{font-size:12px;color:var(--muted);margin:-4px 0 10px}.lt-all{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}.lt-all button{font-size:12px;padding:4px 10px}
 .pop{position:absolute;z-index:5;max-width:260px;background:rgba(20,27,45,.96);border:1px solid var(--border);border-radius:12px;padding:12px 34px 12px 14px;box-shadow:0 10px 30px rgba(0,0,0,.45);font-size:14px}
 .pop-h{font-family:var(--display);font-weight:500;font-size:15px;display:flex;align-items:center;gap:8px;margin-bottom:4px}
 .pop-sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:6px}
@@ -145,7 +146,8 @@ const LINE_CITIES = [
   ["Красноярск",56.04,92.93],["Мандалай",21.97,96.08],["Янгон",16.81,96.16],["Бангкок",13.75,100.50],["Медан",3.58,98.67],["Куала-Лумпур",3.14,101.69]
 ];
 
-const state = {on:new Set(LINES.map(p=>p.key)), angles:new Set(["ASC","DSC","MC","IC"]), sel:"jupiter", zoom:1};
+const state = {on:new Set(LINES.map(p=>p.key)), angles:new Set(["ASC","DSC","MC","IC"]), off:new Set(), sel:"jupiter", zoom:1};
+const vis = f => state.on.has(f.key) && state.angles.has(f.ang) && !state.off.has(f.key+"|"+f.ang);
 
 const land = topojson.feature(WORLD, WORLD.objects.land);
 const borders = topojson.mesh(WORLD, WORLD.objects.countries, (a,b)=>a!==b);
@@ -179,7 +181,7 @@ function draw(){
   ctx.beginPath(); path(borders); ctx.strokeStyle="rgba(150,170,220,.28)"; ctx.lineWidth=0.6; ctx.stroke();
 
   for(const f of features){
-    if(!state.on.has(f.key) || !state.angles.has(f.ang)) continue;
+    if(!vis(f)) continue;
     const sel = f.key===state.sel;
     ctx.beginPath(); path(f.geo);
     ctx.setLineDash(f.ang==="DSC"||f.ang==="IC" ? [7,6] : []);
@@ -252,7 +254,7 @@ function pick(e){
   const r=canvas.getBoundingClientRect(); const px=e.clientX-r.left, py=e.clientY-r.top;
   const c=proj.invert([W/2,W/2]); let best=null, bd=14;
   for(const f of features){
-    if(!state.on.has(f.key)||!state.angles.has(f.ang)) continue;
+    if(!vis(f)) continue;
     for(const part of f.geo.coordinates){
     let prev=null;
     for(const pt of part){
@@ -305,8 +307,10 @@ for(const a of ["ASC","MC","DSC","IC"]){
 
 function renderInfo(){
   const p=LINES.find(x=>x.key===state.sel);
-  const rows=["ASC","MC","DSC","IC"].map(a=>`<div class="k">${ANG_RU[a]}</div><div>${MEAN[p.key][a]}</div>`).join("");
-  document.getElementById("info").innerHTML=`<h2><span class="dot" style="background:${COLORS[p.key]};width:12px;height:12px"></span>${p.name}</h2><div class="rows">${rows}</div>`;
+  const rows=["ASC","MC","DSC","IC"].map(a=>{const on=!state.off.has(p.key+"|"+a);return `<button type="button" class="lt" data-l="${a}" aria-pressed="${on}"><span class="stroke${a==="DSC"||a==="IC"?" dash":""}" style="border-top-color:${COLORS[p.key]}"></span><span class="k">${ANG_RU[a]}</span><span>${MEAN[p.key][a]}</span></button>`}).join("");
+  document.getElementById("info").innerHTML=`<h2><span class="dot" style="background:${COLORS[p.key]};width:12px;height:12px"></span>${p.name}</h2><p class="lt-hint">Нажмите на линию, чтобы выключить или включить её</p><div class="lts">${rows}</div><div class="lt-all"><button type="button" data-all="on">Все линии вкл.</button><button type="button" data-all="off">Все линии выкл.</button></div>`;
+  document.querySelectorAll("#info [data-l]").forEach(b=>b.onclick=()=>{const k=p.key+"|"+b.dataset.l; state.off.has(k)?state.off.delete(k):state.off.add(k); if(!state.off.has(k)) state.on.add(p.key); renderInfo(); syncPlanets(); draw();});
+  document.querySelectorAll("#info [data-all]").forEach(b=>b.onclick=()=>{state.off.clear(); if(b.dataset.all==="off"){for(const q of LINES)for(const a of ["ASC","MC","DSC","IC"])state.off.add(q.key+"|"+a);} else {for(const q of LINES)state.on.add(q.key); state.angles=new Set(["ASC","DSC","MC","IC"]); document.querySelectorAll("[id^=ang-]").forEach(x=>x.setAttribute("aria-pressed","true"));} hidePop(); renderInfo(); syncPlanets(); draw();});
 }
 
 const ct=document.getElementById("cities");
