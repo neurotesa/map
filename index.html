@@ -60,7 +60,7 @@ dialog textarea{width:100%;min-height:150px;font:inherit;font-size:15px;padding:
 <style>.tabs{display:flex;gap:4px;max-width:1240px;margin:0 auto 14px;padding:4px;border-radius:10px;background:rgba(127,127,140,.14);width:fit-content;font-family:"IBM Plex Sans","Segoe UI",system-ui,sans-serif}.tabs a{padding:7px 14px;border-radius:7px;font-size:14px;font-weight:500;color:inherit;opacity:.7;text-decoration:none}.tabs a:hover{opacity:1}.tabs a[aria-current]{opacity:1;background:rgba(127,127,140,.28)}</style><nav class="tabs"><a href="index.html" aria-current="page">Календарь</a><a href="globe.html">Глобус</a><a href="path.html">Мой путь</a></nav>
 <div class="wrap">
 <header><h1>Календарь по карте</h1><p class="sub">натальная карта 6.04.1992, Тараз · время Алматы · листайте месяцы стрелками или свайпом</p>
-<div class="bt" role="group" aria-label="Время рождения">Время рождения: <button type="button" data-bt="600">6:00</button><button type="button" data-bt="609">6:09</button></div></header>
+<div class="bt" role="group" aria-label="Время рождения">Время рождения: <button type="button" data-bt="530">5:30</button><button type="button" data-bt="600">6:00</button></div></header>
 <div class="legend"><span><i style="background:var(--good)"></i>лёгкий день</span><span><i style="background:var(--line)"></i>обычный</span><span><i style="background:var(--bad)"></i>напряжённый</span><span>✓ делать · ✕ не делать</span></div>
 <div id="cal"></div>
 <p class="foot">Записи «Реальность» хранятся в этом браузере и не зависят от файлов прогноза: при добавлении новых месяцев и обновлении сайта они остаются. Чтобы не потерять их при очистке браузера или перенести на другое устройство, раз в месяц скачивайте Excel — его же можно загрузить обратно. <button id="all">Скачать копию всех записей</button> · <label style="color:var(--accent);text-decoration:underline;cursor:pointer">загрузить копию<input type="file" id="allimp" accept=".json" hidden></label></p>
@@ -69,11 +69,11 @@ dialog textarea{width:100%;min-height:150px;font:inherit;font-size:15px;padding:
 <dialog id="dlg"><form method="dialog" id="frm"><div id="dh"></div><label for="ta" style="font-weight:600;display:block;margin:10px 0 6px">Что было на самом деле</label><textarea id="ta" placeholder="События дня, настроение, ответы на письма…"></textarea><div class="row"><button value="cancel">Отмена</button><button value="save" class="primary">Сохранить</button></div></form></dialog>
 
 <script>window.MONTHS=[];</script>
-<!-- Новый месяц: положите файлы в папки months и months-609 и добавьте месяц в список ниже -->
+<!-- Новый месяц: положите файлы в папки months и months-530 и добавьте месяц в список ниже -->
 <script>
 const MONTH_LIST=["2026-10","2026-11","2026-12","2027-01","2027-02","2027-03","2027-04","2027-05","2027-06","2027-07","2027-08","2027-09","2027-10","2027-11","2027-12"];
-let BT="600"; try{BT=localStorage.getItem("natal-birth-time")||"600"}catch(e){}
-for(const m of MONTH_LIST) document.write('<script src="'+(BT==="609"?"months-609/":"months/")+m+'.js"><\/script>');
+let BT="600"; try{BT=localStorage.getItem("natal-birth-time")||"600"}catch(e){} if(BT!=="530")BT="600";
+for(const m of MONTH_LIST) document.write('<script src="'+(BT==="530"?"months-530/":"months/")+m+'.js"><\/script>');
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
